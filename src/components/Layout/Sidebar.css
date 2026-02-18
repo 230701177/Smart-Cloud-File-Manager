@@ -1,0 +1,199 @@
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--color-sidebar);
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+    transition: width var(--transition-base);
+    overflow: hidden;
+}
+
+.sidebar--collapsed {
+    width: var(--sidebar-collapsed);
+}
+
+.sidebar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-4) var(--sp-4);
+    height: var(--topbar-height);
+    border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.sidebar__logo {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    overflow: hidden;
+}
+
+.sidebar__logo-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-md);
+    color: white;
+    flex-shrink: 0;
+}
+
+.sidebar__logo-text {
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    white-space: nowrap;
+}
+
+.sidebar__toggle {
+    flex-shrink: 0;
+}
+
+.sidebar--collapsed .sidebar__toggle {
+    margin: 0 auto;
+}
+
+.sidebar__nav {
+    flex: 1;
+    padding: var(--sp-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    overflow-y: auto;
+}
+
+.sidebar__link {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-3);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    position: relative;
+}
+
+.sidebar__link:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text-primary);
+}
+
+.sidebar__link--active {
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+}
+
+.sidebar__link--active::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 20px;
+    background: var(--color-primary);
+    border-radius: var(--radius-full);
+}
+
+.sidebar__badge {
+    margin-left: auto;
+    background: var(--color-danger-subtle);
+    color: var(--color-danger);
+    font-size: var(--fs-xs);
+    padding: 1px 7px;
+    border-radius: var(--radius-full);
+    font-weight: var(--fw-semibold);
+}
+
+.sidebar__divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: 0 var(--sp-4);
+}
+
+.sidebar__bottom {
+    padding: var(--sp-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+}
+
+.sidebar__storage {
+    padding: var(--sp-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+}
+
+.sidebar__storage-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.sidebar__storage-bar {
+    height: 4px;
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.sidebar__storage-fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-full);
+    transition: width var(--transition-slow);
+}
+
+.sidebar--collapsed .sidebar__link {
+    justify-content: center;
+    padding: var(--sp-3);
+}
+
+.sidebar--collapsed .sidebar__link span,
+.sidebar--collapsed .sidebar__badge {
+    display: none;
+}
+
+.sidebar--collapsed .sidebar__link--active::before {
+    left: -4px;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.sidebar--mobile-open {
+        transform: translateX(0);
+        box-shadow: var(--shadow-xl);
+    }
+}
+
+.sidebar--overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-base);
+}
+
+.sidebar--overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}

@@ -68,4 +68,3 @@ This project is currently under development. License details will be added soon.
 <hr>
 
 <p><strong>© 2026 Smart Cloud File Manager. All Rights Reserved.</strong></p>
->>>>>>> 2878ca421e94c9b5048e10919d023bd858914f98

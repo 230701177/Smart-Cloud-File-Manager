@@ -14,35 +14,125 @@ export default function SettingsPage() {
     const { theme, toggleTheme } = useTheme();
     const { getStats } = useFiles();
     const stats = getStats();
-    const quota = 10 * 1024 * 1024 * 1024;
+    const quota = currentUser?.storageQuota || 5368709120;
     const usedPercent = Math.round((stats.totalStorageUsed / quota) * 100);
 
-    // Interactive States
-    const [notifications, setNotifications] = useState({
+    // Interactive States from User Model
+    const [notifications, setNotifications] = useState(currentUser?.notificationSettings || {
         uploads: true,
         dedup: true,
         storage: false
     });
-    const [is2faEnabled, setIs2faEnabled] = useState(false);
-    const [sessions, setSessions] = useState([
-        { id: 1, device: 'iPhone 15 Pro', location: 'Chennai, India', time: 'Active now', icon: Smartphone, current: true },
-        { id: 2, device: 'MacBook Pro 14"', location: 'Chennai, India', time: '2 hours ago', icon: Laptop, current: false }
-    ]);
+    
+    // Detect Current Device
+    const getDeviceInfo = () => {
+        const ua = navigator.userAgent;
+        let device = "Desktop Device";
+        let icon = Laptop;
+        
+        if (/mobile/i.test(ua)) {
+            device = "Mobile Device";
+            icon = Smartphone;
+        }
+        
+        // Simple OS detection
+        let os = "Unknown OS";
+        if (ua.indexOf("Win") !== -1) os = "Windows";
+        if (ua.indexOf("Mac") !== -1) os = "macOS";
+        if (ua.indexOf("Linux") !== -1) os = "Linux";
+        if (ua.indexOf("Android") !== -1) os = "Android";
+        if (ua.indexOf("like Mac") !== -1) os = "iOS";
+        
+        return { device: `${os} ${device}`, icon };
+    };
+    
+    const deviceInfo = getDeviceInfo();
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const { updateProfile, logout } = useAuth();
 
-    const toggleNotification = (key) => {
-        setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
+    const toggleNotification = async (key) => {
+        const newSettings = { ...notifications, [key]: !notifications[key] };
+        setNotifications(newSettings);
+        
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const res = await fetch('/api/auth/settings', {
+                method: 'PATCH',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ notificationSettings: newSettings })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                updateProfile({ notificationSettings: data.user.notificationSettings });
+            }
+        } catch (err) {
+            console.error('Failed to update notification settings', err);
+            // Revert on error
+            setNotifications(notifications);
+        }
     };
 
-    const removeSession = (id) => {
-        setSessions(prev => prev.filter(s => s.id !== id));
-    };
-
-    const handleAction = (label) => {
+    const handleAction = async (label) => {
         setIsSaving(true);
-        setTimeout(() => setIsSaving(false), 2000); // Simulate network request
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            if (label === '2FA') {
+                const res = await fetch('/api/auth/toggle-2fa', {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    updateProfile({ twoFactorEnabled: data.user.twoFactorEnabled });
+                }
+            } else if (label === 'Password') {
+                const oldPassword = prompt('Enter old password:');
+                const newPassword = prompt('Enter new password:');
+                if (oldPassword && newPassword) {
+                    await fetch('/api/auth/change-password', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ oldPassword, newPassword })
+                    });
+                    alert('Password changed successfully (if credentials were correct).');
+                }
+            } else if (label === 'Logout All') {
+                await fetch('/api/auth/logout-all', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                alert('Logged out of all sessions. You will need to log back in.');
+                logout();
+            }
+        } catch (e) {
+            console.error('Action failed', e);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        try {
+            await fetch('/api/auth/delete-account', {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setShowDeleteModal(false);
+            logout();
+        } catch (e) {
+            console.error('Delete account failed', e);
+        }
     };
 
     return (
@@ -144,14 +234,14 @@ export default function SettingsPage() {
                             <p className="text-xs text-tertiary">Add an extra layer of security to your account</p>
                         </div>
                         <button
-                            className={`settings__switch ${is2faEnabled ? 'settings__switch--on' : ''}`}
-                            onClick={() => setIs2faEnabled(!is2faEnabled)}
+                            className={`settings__switch ${currentUser?.twoFactorEnabled ? 'settings__switch--on' : ''}`}
+                            onClick={() => handleAction('2FA')}
                         >
                             <div className="settings__switch-knob" />
                         </button>
                     </div>
 
-                    {is2faEnabled && (
+                    {currentUser?.twoFactorEnabled && (
                         <div className="settings__reveal-info animate-fade-in">
                             <div className="settings__opt-item" style={{ background: 'var(--color-bg)', border: '1px dashed var(--color-primary)' }}>
                                 <div className="settings__opt-detail">
@@ -167,20 +257,14 @@ export default function SettingsPage() {
                     <div className="sidebar__divider" style={{ margin: 'var(--sp-4) 0' }} />
 
                     <div className="settings__sessions-list">
-                        {sessions.map(session => (
-                            <div key={session.id} className="settings__session-item">
-                                <div className="settings__session-icon"><session.icon size={16} /></div>
-                                <div className="settings__session-info">
-                                    <span className="text-sm" style={{ fontWeight: 500 }}>{session.device}</span>
-                                    <span className="text-xs text-tertiary">{session.location} • {session.time}</span>
-                                </div>
-                                {session.current ? (
-                                    <span className="badge badge-primary">Current</span>
-                                ) : (
-                                    <button className="btn-icon text-tertiary" onClick={() => removeSession(session.id)}><LogOut size={14} /></button>
-                                )}
+                        <div className="settings__session-item">
+                            <div className="settings__session-icon"><deviceInfo.icon size={16} /></div>
+                            <div className="settings__session-info">
+                                <span className="text-sm" style={{ fontWeight: 500 }}>{deviceInfo.device}</span>
+                                <span className="text-xs text-tertiary">Current Session • Active now</span>
                             </div>
-                        ))}
+                            <span className="badge badge-primary">Current</span>
+                        </div>
                     </div>
                 </div>
 
@@ -215,14 +299,14 @@ export default function SettingsPage() {
                         <div className="settings__opt-item">
                             <div className="settings__opt-icon" style={{ background: 'var(--color-primary-subtle)', color: 'var(--color-primary)' }}><Zap size={18} /></div>
                             <div className="settings__opt-detail">
-                                <span className="settings__opt-value">{Math.round((stats.storageSaved / (stats.totalStorageUsed + stats.storageSaved)) * 100)}%</span>
+                                <span className="settings__opt-value">{stats.totalStorageUsed ? Math.round((stats.storageSaved / (stats.totalStorageUsed + stats.storageSaved)) * 100) : 0}%</span>
                                 <span className="settings__opt-label">Dedup Ratio</span>
                             </div>
                         </div>
                         <div className="settings__opt-item">
                             <div className="settings__opt-icon" style={{ background: 'var(--color-success-subtle)', color: 'var(--color-success)' }}><RefreshCw size={18} /></div>
                             <div className="settings__opt-detail">
-                                <span className="settings__opt-value">{stats.duplicatesAvoided}</span>
+                                <span className="settings__opt-value">{stats.uniqueChunks ? (stats.totalChunks - stats.uniqueChunks) : 0}</span>
                                 <span className="settings__opt-label">Reused Chunks</span>
                             </div>
                         </div>
@@ -270,7 +354,7 @@ export default function SettingsPage() {
                             <button
                                 className="btn btn-danger"
                                 disabled={deleteConfirmText !== 'DELETE'}
-                                onClick={() => { alert('Account deletion simulated!'); setShowDeleteModal(false); }}
+                                onClick={handleDeleteAccount}
                             >
                                 Delete Account
                             </button>

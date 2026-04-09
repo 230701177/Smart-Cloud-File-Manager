@@ -1,50 +1,72 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { Cloud, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import './Auth.css';
 
+
 export default function LoginPage() {
-    const [email, setEmail] = useState('mano@smartcloud.io');
-    const [password, setPassword] = useState('password123');
+    const [email, setEmail] = useState(() => localStorage.getItem('rememberedEmail') || '');
+    const [password, setPassword] = useState('');
+    const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem('rememberedEmail'));
     const [showPass, setShowPass] = useState(false);
     const { login, isLoading, error, setError } = useAuth();
+
     const navigate = useNavigate();
+
+    const [isSuccess, setIsSuccess] = useState(false);
+
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
         if (!email || !password) { setError('Please fill all fields'); return; }
+        
         const success = await login(email, password);
-        if (success) navigate('/dashboard');
+        if (success) {
+            if (rememberMe) {
+                localStorage.setItem('rememberedEmail', email);
+            } else {
+                localStorage.removeItem('rememberedEmail');
+            }
+            setIsSuccess(true);
+            setTimeout(() => navigate('/dashboard'), 1200);
+        }
     };
 
+
+
     return (
-        <div className="auth-page">
+        <div className="auth-page" data-theme="light">
+            {isSuccess && (
+                <div className="auth-success-overlay">
+                    <div className="auth-success-content animate-expand">
+                        <div className="auth-success-icon">
+                            <img src="/cloud-light.png" alt="CloudFM" style={{ width: '60%', height: '60%', objectFit: 'contain' }} />
+                        </div>
+
+
+                        <h2>Identity Verified</h2>
+                        <p>Accessing your cloud vault...</p>
+                    </div>
+                </div>
+            )}
             <div className="auth-page__brand">
+
                 <div className="auth-brand__content">
                     <div className="auth-brand__logo">
-                        <Cloud size={40} />
+                        <img src="/cloud-light.png" alt="CloudFM" />
                     </div>
-                    <h1 className="auth-brand__title">Smart Cloud<br />File Manager</h1>
-                    <p className="auth-brand__subtitle">
-                        Intelligent deduplication. Version control. Safe deletions.
-                        Your files, optimized.
+
+                    <div className="auth-brand__tagline">Intelligence Defined</div>
+                    <p className="auth-brand__desc">
+                        Experience the next generation of cloud storage with smart deduplication and versioning.
                     </p>
-                    <div className="auth-brand__features">
-                        <div className="auth-brand__feature">
-                            <div className="auth-brand__feature-dot" style={{ background: '#34d399' }} />
-                            <span>SHA-256 Deduplication</span>
-                        </div>
-                        <div className="auth-brand__feature">
-                            <div className="auth-brand__feature-dot" style={{ background: '#60a5fa' }} />
-                            <span>Version History</span>
-                        </div>
-                        <div className="auth-brand__feature">
-                            <div className="auth-brand__feature-dot" style={{ background: '#fbbf24' }} />
-                            <span>Safe Delete with RefCount</span>
-                        </div>
-                    </div>
+
+
+
                 </div>
             </div>
 
@@ -86,12 +108,18 @@ export default function LoginPage() {
                     </div>
 
                     <div className="auth-form__options">
-                        <label className="auth-checkbox">
-                            <input type="checkbox" defaultChecked />
+                        <label className="auth-checkbox clay-checkbox">
+                            <input 
+                                type="checkbox" 
+                                checked={rememberMe} 
+                                onChange={(e) => setRememberMe(e.target.checked)} 
+                            />
+                            <span className="checkbox-box" />
                             <span className="text-sm">Remember me</span>
                         </label>
                         <a href="#" className="text-sm auth-link">Forgot password?</a>
                     </div>
+
 
                     <button type="submit" className="btn btn-primary auth-submit" disabled={isLoading}>
                         {isLoading ? <span className="spinner" /> : <>Sign In <ArrowRight size={16} /></>}

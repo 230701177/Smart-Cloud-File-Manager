@@ -38,17 +38,18 @@ export default function DashboardPage() {
 
     return (
         <div className="dashboard animate-fade-in">
-            <div className="dashboard__header">
+            <div className="dashboard__header animate-reveal">
                 <div>
-                    <h1 className="dashboard__title">Dashboard</h1>
-                    <p className="text-secondary text-sm">Overview of your cloud storage</p>
+                    <h1 className="dashboard__title">Welcome Back</h1>
+                    <p className="text-secondary text-sm">Initializing your secure cloud vault...</p>
                 </div>
             </div>
 
+
             {/* Stat Cards */}
             <div className="dashboard__stats grid-4">
-                {statCards.map((s) => (
-                    <div key={s.label} className="stat-card">
+                {statCards.map((s, index) => (
+                    <div key={s.label} className={`stat-card animate-reveal animate-stagger-${index + 1}`}>
                         <div className="stat-card__icon" style={{ background: s.bg, color: s.color }}>
                             <s.icon size={22} />
                         </div>
@@ -58,11 +59,12 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 ))}
+
             </div>
 
             <div className="dashboard__grid">
                 {/* Storage Breakdown */}
-                <div className="card dashboard__breakdown">
+                <div className="card dashboard__breakdown animate-reveal animate-stagger-2">
                     <h3 className="dashboard__section-title">Storage Breakdown</h3>
                     <div className="breakdown__list">
                         {breakdownItems.map((item) => (
@@ -99,11 +101,13 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
+
                 {/* Recent Files */}
-                <div className="card dashboard__recent">
+                <div className="card dashboard__recent animate-reveal animate-stagger-3">
                     <h3 className="dashboard__section-title">Recent Files</h3>
                     <div className="recent__list">
                         {recentFiles.map((file) => {
+
                             const Icon = typeIcons[file.type] || Files;
                             return (
                                 <div

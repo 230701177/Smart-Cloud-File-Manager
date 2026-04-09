@@ -1,0 +1,287 @@
+.viewer-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--color-modal-overlay);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-10);
+    transition: all var(--transition-base);
+}
+
+.viewer-overlay--maximized {
+    padding: 0;
+}
+
+.viewer-container {
+    width: 1000px;
+    max-width: 100%;
+    height: 85vh;
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-xl);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: var(--clay-shadow-lg);
+    border: 1px solid var(--color-border);
+    position: relative;
+    transition: all var(--transition-base);
+}
+
+.viewer-overlay--maximized .viewer-container {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+}
+
+.viewer__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-4) var(--sp-6);
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--color-border);
+    backdrop-filter: blur(10px);
+}
+
+.viewer__info {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+}
+
+.viewer__icon-wrapper {
+    width: 40px;
+    height: 40px;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: var(--shadow-clay-sm);
+}
+
+.viewer__filename {
+    font-size: var(--fs-md);
+    font-weight: var(--fw-semibold);
+    max-width: 300px;
+}
+
+.viewer__filesize {
+    font-size: var(--fs-xs);
+    color: var(--color-text-tertiary);
+}
+
+.viewer__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+}
+
+.viewer__close:hover {
+    background: var(--color-danger-subtle);
+    color: var(--color-danger);
+    transform: rotate(90deg);
+}
+
+.viewer__body {
+    flex: 1;
+    overflow: auto;
+    padding: var(--sp-6);
+    display: flex;
+    flex-direction: column;
+}
+
+.viewer__content {
+    flex: 1;
+    min-height: 0;
+    border-radius: var(--radius-xl);
+    padding: var(--sp-6);
+    background: var(--color-surface);
+    overflow: auto;
+    position: relative;
+}
+
+/* Claymorphism card for content */
+.clay-card {
+    background: var(--color-bg-elevated);
+    box-shadow:
+        inset 4px 4px 8px rgba(0, 0, 0, 0.05),
+        inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-border);
+}
+
+.viewer__status {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-4);
+}
+
+.viewer__image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: var(--radius-lg);
+}
+
+.viewer__iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: white;
+    border-radius: var(--radius-lg);
+}
+
+.viewer__docx {
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.viewer__docx h1,
+.viewer__docx h2 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+.viewer__table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.viewer__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+}
+
+.viewer__table th {
+    background: rgba(0, 0, 0, 0.05);
+    padding: var(--sp-3) var(--sp-4);
+    text-align: left;
+    font-weight: var(--fw-bold);
+    border-bottom: 2px solid var(--color-border);
+}
+
+.viewer__table td {
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.viewer__text {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    white-space: pre-wrap;
+    color: var(--color-text-secondary);
+}
+
+.pdf-viewer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.pdf-viewer__canvas-wrapper {
+    flex: 1;
+    overflow: auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: var(--sp-10) var(--sp-6) 120px;
+    /* Large bottom padding for controls */
+}
+
+.pdf-viewer__canvas-wrapper canvas {
+    box-shadow: var(--shadow-xl);
+    border-radius: 4px;
+    /* Slight rounding for the document paper */
+    background: white;
+}
+
+.pdf-viewer__canvas-wrapper::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.pdf-viewer__canvas-wrapper::-webkit-scrollbar-thumb {
+    background: var(--color-scrollbar);
+    border: 3px solid var(--color-bg-elevated);
+    border-radius: var(--radius-full);
+}
+
+.pdf-viewer__canvas-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--color-scrollbar-hover);
+}
+
+.pdf-viewer__controls {
+    position: absolute;
+    bottom: var(--sp-6);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    padding: var(--sp-2) var(--sp-4);
+    border-radius: var(--radius-full);
+    z-index: 10;
+    backdrop-filter: blur(12px);
+    background: var(--color-bg-elevated);
+    box-shadow: var(--clay-shadow-md);
+    border: 1px solid var(--color-border);
+}
+
+.pdf-viewer__pagination,
+.pdf-viewer__zoom {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+}
+
+.pdf-viewer__page-info,
+.pdf-viewer__zoom-info {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-bold);
+    min-width: 60px;
+    text-align: center;
+}
+
+.pdf-viewer__divider {
+    width: 1px;
+    height: 24px;
+    background: var(--color-border);
+}
+
+.btn-icon--sm {
+    width: 32px;
+    height: 32px;
+}
+
+.pdf-viewer__loading {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-4);
+}
+
+@media (max-width: 768px) {
+    .pdf-viewer__controls {
+        width: 90%;
+        bottom: var(--sp-4);
+        gap: var(--sp-2);
+        padding: var(--sp-2);
+    }
+}

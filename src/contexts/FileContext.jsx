@@ -1,11 +1,10 @@
-import { createContext, useContext, useReducer, useCallback } from 'react';
-import { mockFiles as initialFiles, mockFolders as initialFolders, mockStats } from '../data/mockData';
+import { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 
 const FileContext = createContext(null);
 
 const initialState = {
-    files: initialFiles,
-    folders: initialFolders,
+    files: [],
+    folders: [], 
     trash: [],
     uploads: [],
     selectedFile: null,
@@ -16,10 +15,22 @@ const initialState = {
     sortOrder: 'asc',
     showUploadModal: false,
     showDetailsPanel: false,
+    showViewer: false,
+    viewingFile: null,
+    backendStats: null,
 };
 
 function fileReducer(state, action) {
     switch (action.type) {
+        case 'FETCH_FILES_SUCCESS':
+            return { ...state, files: action.payload };
+
+        case 'FETCH_FOLDERS_SUCCESS':
+            return { ...state, folders: action.payload };
+
+        case 'FETCH_STATS_SUCCESS':
+            return { ...state, backendStats: action.payload };
+
         case 'SET_CURRENT_FOLDER':
             return { ...state, currentFolderId: action.payload, selectedFile: null, showDetailsPanel: false };
 
@@ -43,6 +54,12 @@ function fileReducer(state, action) {
         case 'TOGGLE_UPLOAD_MODAL':
             return { ...state, showUploadModal: !state.showUploadModal };
 
+        case 'OPEN_VIEWER':
+            return { ...state, showViewer: true, viewingFile: action.payload };
+
+        case 'CLOSE_VIEWER':
+            return { ...state, showViewer: false, viewingFile: null };
+
         case 'UPLOAD_START':
             return {
                 ...state,
@@ -59,31 +76,34 @@ function fileReducer(state, action) {
 
         case 'UPLOAD_COMPLETE': {
             const upload = state.uploads.find((u) => u.id === action.payload.id);
-            const newFile = {
-                id: `file-${Date.now()}`,
-                name: upload?.name || 'Untitled',
-                type: getFileType(upload?.name || ''),
-                size: upload?.size || 0,
+            const backendFile = action.payload.file; // From real API logic
+            
+            const newFile = backendFile ? {
+                id: backendFile.fileId,
+                name: backendFile.fileName,
+                type: getFileType(backendFile.fileName),
+                size: backendFile.size,
                 parentId: state.currentFolderId,
-                ownerId: 'user-1',
-                createdAt: new Date().toISOString(),
-                modifiedAt: new Date().toISOString(),
+                ownerId: backendFile.userId || 'user-1',
+                createdAt: backendFile.createdAt || new Date().toISOString(),
+                modifiedAt: backendFile.updatedAt || new Date().toISOString(),
                 shared: false,
                 starred: false,
-                hash: `sha256-${Math.random().toString(36).substr(2, 9)}`,
-                chunkCount: Math.ceil((upload?.size || 1024) / 262144),
+                hash: backendFile.chunkHashes ? backendFile.chunkHashes[0] : `sha256-${Math.random().toString(36).substr(2, 9)}`,
+                chunkCount: backendFile.chunkHashes?.length || Math.ceil((backendFile.size || 1024) / 262144),
                 versions: [
                     {
-                        versionId: `v-${Date.now()}`,
-                        date: new Date().toISOString(),
-                        size: upload?.size || 0,
+                        versionId: `v-${backendFile.version || 1}`,
+                        date: backendFile.createdAt || new Date().toISOString(),
+                        size: backendFile.size || 0,
                         note: 'Initial upload',
                     },
                 ],
-            };
+            } : null;
+            
             return {
                 ...state,
-                files: [...state.files, newFile],
+                files: newFile ? [...state.files, newFile] : state.files,
                 uploads: state.uploads.filter((u) => u.id !== action.payload.id),
             };
         }
@@ -198,11 +218,11 @@ export function FileProvider({ children }) {
         const totalFiles = state.files.length;
         const totalFolders = state.folders.length;
         const totalStorageUsed = state.files.reduce((acc, f) => acc + f.size, 0);
-        const totalVersions = state.files.reduce((acc, f) => acc + f.versions.length, 0);
-        const totalChunks = state.files.reduce((acc, f) => acc + f.chunkCount, 0);
-        const uniqueChunks = Math.round(totalChunks * 0.76);
-        const storageSaved = mockStats.storageSaved;
-        const duplicatesAvoided = mockStats.duplicatesAvoided;
+        const totalVersions = state.files.reduce((acc, f) => acc + f.versions?.length || 1, 0);
+        const totalChunks = state.files.reduce((acc, f) => acc + (f.chunkCount || 1), 0);
+        const uniqueChunks = state.backendStats?.totalChunks || totalChunks;
+        const storageSaved = state.backendStats ? (state.backendStats.totalLogicalSize - state.backendStats.totalPhysicalSize) : 0;
+        const duplicatesAvoided = state.backendStats?.duplicatesAvoided || 0;
 
         const breakdown = { documents: 0, images: 0, videos: 0, presentations: 0, code: 0, other: 0 };
         state.files.forEach((f) => {
@@ -215,7 +235,92 @@ export function FileProvider({ children }) {
         });
 
         return { totalFiles, totalFolders, totalStorageUsed, storageSaved, duplicatesAvoided, totalVersions, totalChunks, uniqueChunks, storageBreakdown: breakdown };
-    }, [state.files, state.folders]);
+    }, [state.files, state.folders, state.backendStats]);
+
+    const fetchFiles = useCallback(async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const res = await fetch('/api/files/list', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const mappedFiles = data.files.map((backendFile) => ({
+                    id: backendFile.fileId,
+                    name: backendFile.fileName,
+                    type: getFileType(backendFile.fileName),
+                    size: backendFile.size,
+                    parentId: backendFile.parentId || null,
+                    ownerId: backendFile.userId,
+                    createdAt: backendFile.createdAt || new Date().toISOString(),
+                    modifiedAt: backendFile.updatedAt || new Date().toISOString(),
+                    shared: false,
+                    starred: backendFile.starred || false,
+                    hash: backendFile.chunkHashes ? backendFile.chunkHashes[0] : 'sha256-xxx',
+                    chunkCount: backendFile.chunkHashes?.length || 1,
+                    inTrash: backendFile.inTrash || false,
+                    versions: [
+                        {
+                            versionId: `v-${backendFile.version || 1}`,
+                            date: backendFile.createdAt || new Date().toISOString(),
+                            size: backendFile.size || 0,
+                            note: 'Upload',
+                        },
+                    ],
+                }));
+                dispatch({ type: 'FETCH_FILES_SUCCESS', payload: mappedFiles });
+            }
+        } catch (error) {
+            console.error('Failed to fetch files', error);
+        }
+    }, []);
+
+    const fetchFolders = useCallback(async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const res = await fetch('/api/folders', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const mappedFolders = data.folders.map((f) => ({
+                    id: f.folderId,
+                    name: f.name,
+                    parentId: f.parentId || null,
+                    ownerId: f.userId,
+                    createdAt: f.createdAt,
+                    color: f.color
+                }));
+                dispatch({ type: 'FETCH_FOLDERS_SUCCESS', payload: mappedFolders });
+            }
+        } catch (error) {
+            console.error('Failed to fetch folders', error);
+        }
+    }, []);
+
+    const fetchStats = useCallback(async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const res = await fetch('/api/files/stats', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                dispatch({ type: 'FETCH_STATS_SUCCESS', payload: data.stats });
+            }
+        } catch (error) {
+            console.error('Failed to fetch stats', error);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchFiles();
+        fetchFolders();
+        fetchStats();
+    }, [fetchFiles, fetchFolders, fetchStats]);
 
     const getCurrentItems = useCallback(() => {
         let files = state.files.filter((f) => f.parentId === state.currentFolderId);
@@ -281,19 +386,56 @@ export function FileProvider({ children }) {
         let progress = 0;
         const interval = setInterval(() => {
             progress += Math.random() * 15 + 5;
-            if (progress >= 80 && progress < 95) {
+            if (progress >= 80 && progress < 90) {
                 dispatch({ type: 'UPLOAD_PROGRESS', payload: { id: uploadId, progress: Math.min(progress, 90), status: 'deduplicating' } });
-            } else if (progress >= 95) {
-                clearInterval(interval);
-                dispatch({ type: 'UPLOAD_PROGRESS', payload: { id: uploadId, progress: 100, status: 'complete' } });
-                setTimeout(() => {
-                    dispatch({ type: 'UPLOAD_COMPLETE', payload: { id: uploadId } });
-                }, 800);
-            } else {
+            } else if (progress < 80) {
                 dispatch({ type: 'UPLOAD_PROGRESS', payload: { id: uploadId, progress } });
             }
         }, 400);
-    }, []);
+
+        const formData = new FormData();
+        formData.append('file', file);
+        if (state.currentFolderId) {
+            formData.append('parentId', state.currentFolderId);
+        }
+
+        const token = localStorage.getItem('token');
+        fetch('/api/files/upload', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData,
+        })
+        .then(res => res.json())
+        .then(data => {
+            clearInterval(interval);
+            dispatch({ type: 'UPLOAD_PROGRESS', payload: { id: uploadId, progress: 100, status: 'complete' } });
+            setTimeout(() => {
+                dispatch({ type: 'UPLOAD_COMPLETE', payload: { id: uploadId, file: data.file } });
+                fetchStats();
+            }, 800);
+        })
+        .catch(err => {
+            clearInterval(interval);
+            console.error('Upload failed', err);
+            // Could add an error status here
+        });
+
+        return uploadId;
+    }, [fetchStats, state.currentFolderId]);
+
+    const deleteFile = useCallback(async (fileId) => {
+        dispatch({ type: 'DELETE_FILE', payload: fileId });
+        try {
+            const token = localStorage.getItem('token');
+            await fetch(`/api/files/${fileId}`, { 
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            fetchStats();
+        } catch (error) {
+            console.error('Delete failed', error);
+        }
+    }, [fetchStats]);
 
     return (
         <FileContext.Provider
@@ -306,6 +448,8 @@ export function FileProvider({ children }) {
                 getRecentFiles,
                 getStarredFiles,
                 simulateUpload,
+                deleteFile,
+                fetchFiles,
             }}
         >
             {children}

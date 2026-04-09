@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useFiles } from '../../contexts/FileContext';
-import { mockNotifications } from '../../data/mockData';
 import { formatDate } from '../../utils/helpers';
 import './TopBar.css';
 
@@ -15,7 +14,10 @@ export default function TopBar({ onMobileMenuToggle }) {
     const [showNotifs, setShowNotifs] = useState(false);
     const userMenuRef = useRef(null);
     const notifRef = useRef(null);
-    const unreadCount = mockNotifications.filter((n) => !n.read).length;
+    
+    // Notifications would be fetched here in a real realtime scenario.
+    const notifications = [];
+    const unreadCount = notifications.filter((n) => !n.read).length;
 
     useEffect(() => {
         function handleClick(e) {
@@ -68,7 +70,7 @@ export default function TopBar({ onMobileMenuToggle }) {
                                 <span className="text-sm" style={{ fontWeight: 600 }}>Notifications</span>
                                 <span className="badge badge-primary">{unreadCount} new</span>
                             </div>
-                            {mockNotifications.map((n) => (
+                            {notifications.map((n) => (
                                 <div key={n.id} className={`topbar__notif-item ${!n.read ? 'topbar__notif-item--unread' : ''}`}>
                                     <p className="text-sm">{n.message}</p>
                                     <span className="text-xs text-tertiary">{formatDate(n.time)}</span>

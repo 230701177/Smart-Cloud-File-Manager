@@ -117,33 +117,39 @@
 
 .explorer__item {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: var(--sp-4);
+    padding: var(--sp-5);
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: all var(--transition-base);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--sp-3);
     text-align: center;
+    box-shadow: var(--clay-shadow-sm);
 }
 
 .explorer__item:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--clay-shadow-md);
     border-color: var(--color-primary);
-    background: var(--color-surface-hover);
-    transform: translateY(-1px);
 }
 
 .explorer__item--list {
     flex-direction: row;
     text-align: left;
     align-items: center;
-    padding: var(--sp-3) var(--sp-4);
+    padding: var(--sp-3) var(--sp-5);
 }
 
 .explorer__item--list .explorer__item-info {
     flex: 1;
+    min-width: 0;
+}
+
+.explorer__item-info {
+    width: 100%;
     min-width: 0;
 }
 
@@ -152,6 +158,8 @@
 }
 
 .explorer__item-name {
+    display: block;
+    width: 100%;
     font-size: var(--fs-sm);
     font-weight: var(--fw-medium);
 }

@@ -92,6 +92,9 @@
 
 .details__meta-value {
     font-weight: var(--fw-medium);
+    word-break: break-all;
+    max-width: 250px;
+    text-align: right;
 }
 
 .details__version-list {

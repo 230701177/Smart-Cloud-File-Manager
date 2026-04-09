@@ -1,26 +1,66 @@
-import { createContext, useContext, useState, useCallback } from 'react';
-import { mockUsers } from '../data/mockData';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const initializeAuth = useCallback(async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/auth/me', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setCurrentUser(data.user);
+            } else {
+                localStorage.removeItem('token');
+                setCurrentUser(null);
+            }
+        } catch (err) {
+            localStorage.removeItem('token');
+            setCurrentUser(null);
+            console.error('Auth check failed', err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        initializeAuth();
+    }, [initializeAuth]);
 
     const login = useCallback(async (email, password) => {
         setIsLoading(true);
         setError(null);
-        // Simulate network delay
-        await new Promise((r) => setTimeout(r, 1000));
-        const user = mockUsers.find((u) => u.email === email && u.password === password);
-        if (user) {
-            const { password: _, ...safeUser } = user;
-            setCurrentUser(safeUser);
-            setIsLoading(false);
-            return true;
-        } else {
-            setError('Invalid email or password');
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                localStorage.setItem('token', data.token);
+                setCurrentUser(data.user);
+                setIsLoading(false);
+                return true;
+            } else {
+                setError(data.error || 'Login failed');
+                setIsLoading(false);
+                return false;
+            }
+        } catch (err) {
+            setError('Network error');
             setIsLoading(false);
             return false;
         }
@@ -29,28 +69,33 @@ export function AuthProvider({ children }) {
     const register = useCallback(async (name, email, password) => {
         setIsLoading(true);
         setError(null);
-        await new Promise((r) => setTimeout(r, 1200));
-        const exists = mockUsers.find((u) => u.email === email);
-        if (exists) {
-            setError('Email already registered');
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password })
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                localStorage.setItem('token', data.token);
+                setCurrentUser(data.user);
+                setIsLoading(false);
+                return true;
+            } else {
+                setError(data.error || 'Registration failed');
+                setIsLoading(false);
+                return false;
+            }
+        } catch (err) {
+            setError('Network error');
             setIsLoading(false);
             return false;
         }
-        const newUser = {
-            id: `user-${Date.now()}`,
-            name,
-            email,
-            role: 'user',
-            avatar: null,
-            storageQuota: 5368709120,
-            storageUsed: 0,
-        };
-        setCurrentUser(newUser);
-        setIsLoading(false);
-        return true;
     }, []);
 
     const logout = useCallback(() => {
+        localStorage.removeItem('token');
         setCurrentUser(null);
     }, []);
 

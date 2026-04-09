@@ -5,8 +5,10 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useFiles } from '../../contexts/FileContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { formatBytes } from '../../utils/helpers';
 import './Sidebar.css';
+
 
 const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -18,9 +20,11 @@ const navItems = [
 
 export default function Sidebar({ isOpen, onClose, collapsed, setCollapsed }) {
     const { getStats, trash } = useFiles();
+    const { theme } = useTheme();
     const stats = getStats();
     const location = useLocation();
     const usedPercent = Math.round((stats.totalStorageUsed / (10 * 1024 * 1024 * 1024)) * 100);
+
 
     const handleLinkClick = () => {
         if (window.innerWidth <= 768) {
@@ -32,11 +36,15 @@ export default function Sidebar({ isOpen, onClose, collapsed, setCollapsed }) {
         <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''} ${isOpen ? 'sidebar--mobile-open' : ''}`}>
             <div className="sidebar__header">
                 <div className="sidebar__logo">
-                    <div className="sidebar__logo-icon">
-                        <Cloud size={22} />
-                    </div>
-                    {!collapsed && <span className="sidebar__logo-text">CloudFM</span>}
+                    <img 
+                        src={theme === 'dark' ? '/cloud-dark.png' : '/cloud-light.png'} 
+                        alt="CloudFM Logo" 
+                        className="sidebar__logo-img"
+                    />
+
+
                 </div>
+
                 <button className="btn-icon sidebar__toggle hide-mobile" onClick={() => setCollapsed(!collapsed)}>
                     {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
                 </button>

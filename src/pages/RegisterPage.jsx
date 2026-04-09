@@ -4,6 +4,7 @@ import { Cloud, Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import './Auth.css';
 
+
 export default function RegisterPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -14,6 +15,18 @@ export default function RegisterPage() {
     const { register, isLoading, error, setError } = useAuth();
     const navigate = useNavigate();
 
+    const [isSuccess, setIsSuccess] = useState(false);
+
+    const [showTerms, setShowTerms] = useState(false);
+    const [hasViewedTerms, setHasViewedTerms] = useState(false);
+
+    const openTerms = () => {
+        setShowTerms(true);
+        setHasViewedTerms(true);
+    };
+
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
@@ -22,32 +35,41 @@ export default function RegisterPage() {
         if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
         if (!agreed) { setError('Please agree to the terms'); return; }
         const success = await register(name, email, password);
-        if (success) navigate('/dashboard');
+        if (success) {
+            setIsSuccess(true);
+            setTimeout(() => navigate('/dashboard'), 1200);
+        }
     };
 
+
     return (
-        <div className="auth-page">
-            <div className="auth-page__brand">
-                <div className="auth-brand__content">
-                    <div className="auth-brand__logo"><Cloud size={40} /></div>
-                    <h1 className="auth-brand__title">Smart Cloud<br />File Manager</h1>
-                    <p className="auth-brand__subtitle">
-                        Join the smart storage revolution. Deduplicate, version, and manage your files efficiently.
-                    </p>
-                    <div className="auth-brand__stats">
-                        <div className="auth-brand__stat">
-                            <span className="auth-brand__stat-value">50%</span>
-                            <span className="auth-brand__stat-label">Avg. Space Saved</span>
+        <div className="auth-page" data-theme="light">
+            {isSuccess && (
+                <div className="auth-success-overlay">
+                    <div className="auth-success-content animate-expand">
+                        <div className="auth-success-icon">
+                            <img src="/cloud-light.png" alt="CloudFM" style={{ width: '60%', height: '60%', objectFit: 'contain' }} />
                         </div>
-                        <div className="auth-brand__stat">
-                            <span className="auth-brand__stat-value">SHA-256</span>
-                            <span className="auth-brand__stat-label">Hash Algorithm</span>
-                        </div>
-                        <div className="auth-brand__stat">
-                            <span className="auth-brand__stat-value">∞</span>
-                            <span className="auth-brand__stat-label">Version History</span>
-                        </div>
+
+
+                        <h2>Vault Created</h2>
+                        <p>Setting up your secure environment...</p>
                     </div>
+                </div>
+            )}
+            <div className="auth-page__brand">
+
+                <div className="auth-brand__content">
+                    <div className="auth-brand__logo"><img src="/cloud-light.png" alt="CloudFM" /></div>
+
+                    <div className="auth-brand__tagline">Intelligence Defined</div>
+                    <p className="auth-brand__desc">
+                        Experience the next generation of cloud storage with smart deduplication and versioning.
+                    </p>
+
+
+
+
                 </div>
             </div>
 
@@ -99,10 +121,20 @@ export default function RegisterPage() {
                         </div>
                     </div>
 
-                    <label className="auth-checkbox">
-                        <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
-                        <span className="text-sm">I agree to the Terms of Service</span>
+                    <label className={`auth-checkbox clay-checkbox ${!hasViewedTerms ? 'checkbox-disabled' : ''}`}>
+                        <input 
+                            type="checkbox" 
+                            checked={agreed} 
+                            disabled={!hasViewedTerms}
+                            onChange={(e) => setAgreed(e.target.checked)} 
+                        />
+                        <span className="checkbox-box" />
+                        <span className="text-sm">
+                            I agree to the <span className="auth-link" onClick={openTerms}>Terms of Service</span>
+                        </span>
                     </label>
+
+
 
                     <button type="submit" className="btn btn-primary auth-submit" disabled={isLoading}>
                         {isLoading ? <span className="spinner" /> : <>Create Account <ArrowRight size={16} /></>}
@@ -113,6 +145,40 @@ export default function RegisterPage() {
                     </p>
                 </form>
             </div>
+            {showTerms && (
+                <div className="modal-overlay" onClick={() => setShowTerms(false)}>
+                    <div className="modal-content terms-modal animate-scale-in" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>Terms of Service</h3>
+                            <button className="btn-icon" onClick={() => setShowTerms(false)}>&times;</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="terms-content">
+                                <h4>Our Commitment to Security</h4>
+                                <p>By using Smart Cloud File Manager, you access our advanced deduplication and versioning systems.</p>
+                                
+                                <div className="terms-feature-grid">
+                                    <div className="terms-feature">
+                                        <h5>Smart Chunking</h5>
+                                        <p>Data is broken into unique chunks identified by SHA-256 hashes for maximum efficiency.</p>
+                                    </div>
+                                    <div className="terms-feature">
+                                        <h5>Privacy First</h5>
+                                        <p>Your files are yours. We use reference counting to ensure data is only deleted when no user needs it.</p>
+                                    </div>
+                                </div>
+
+                                <p>By creating an account, you agree to follow our acceptable use policy and security guidelines.</p>
+                                <p>Failure to comply may result in account suspension to protect the integrity of the storage cloud.</p>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-primary" onClick={() => setShowTerms(false)}>I Understand</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
+

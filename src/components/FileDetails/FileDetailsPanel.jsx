@@ -1,12 +1,12 @@
 import {
-    X, Download, Trash2, Star, Clock, Share2, FileText, Image, Video, Code, User, Hash, Layers, RotateCcw
+    X, Download, Trash2, Star, Clock, Share2, FileText, Image, Video, Code, User, Hash, Layers, RotateCcw, Eye
 } from 'lucide-react';
 import { useFiles } from '../../contexts/FileContext';
 import { formatBytes, formatDate, getFileColor } from '../../utils/helpers';
 import './FileDetails.css';
 
 export default function FileDetailsPanel() {
-    const { selectedFile, showDetailsPanel, dispatch } = useFiles();
+    const { selectedFile, showDetailsPanel, dispatch, deleteFile } = useFiles();
     if (!showDetailsPanel || !selectedFile) return null;
 
     const meta = [
@@ -34,13 +34,20 @@ export default function FileDetailsPanel() {
                 </div>
 
                 <div className="details__actions">
-                    <button className="btn btn-primary"><Download size={16} /> Download</button>
+                    <button className="btn btn-primary" style={{ flex: 2 }} onClick={() => dispatch({ type: 'OPEN_VIEWER', payload: selectedFile })}>
+                        <Eye size={16} /> View
+                    </button>
+                    <button className="btn btn-secondary" title="Download" onClick={() => {
+                        const token = localStorage.getItem('token');
+                        window.open(`/api/files/download/${selectedFile.id}?token=${token}`, '_blank');
+                    }}>
+                        <Download size={16} />
+                    </button>
                     <button className="btn btn-secondary" onClick={() => dispatch({ type: 'TOGGLE_STAR', payload: selectedFile.id })}>
                         <Star size={16} fill={selectedFile.starred ? 'var(--color-warning)' : 'none'} color={selectedFile.starred ? 'var(--color-warning)' : 'currentColor'} />
-                        {selectedFile.starred ? 'Starred' : 'Star'}
                     </button>
-                    <button className="btn btn-danger" onClick={() => dispatch({ type: 'DELETE_FILE', payload: selectedFile.id })}>
-                        <Trash2 size={16} /> Delete
+                    <button className="btn btn-danger" onClick={() => deleteFile(selectedFile.id)}>
+                        <Trash2 size={16} />
                     </button>
                 </div>
 

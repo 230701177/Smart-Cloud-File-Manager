@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
     Grid, List, SortAsc, ChevronRight, FolderOpen, Folder,
     FileText, Image, Video, Code, Presentation, Package, File as FileIcon, Sheet,
-    Star, MoreVertical, Download, Trash2, Info, Music, Archive
+    Star, MoreVertical, Download, Trash2, Info, Music, Archive, Eye
 } from 'lucide-react';
 import { useFiles } from '../contexts/FileContext';
 import { formatBytes, formatDate, getFileColor } from '../utils/helpers';
@@ -19,7 +19,7 @@ export default function ExplorerPage() {
     const {
         viewMode, searchQuery, sortBy, sortOrder,
         currentFolderId, dispatch,
-        getCurrentItems, getBreadcrumbs,
+        getCurrentItems, getBreadcrumbs, deleteFile,
     } = useFiles();
     const { files, folders } = getCurrentItems();
     const breadcrumbs = getBreadcrumbs();
@@ -128,7 +128,7 @@ export default function ExplorerPage() {
                                         <div
                                             key={file.id}
                                             className={`explorer__item explorer__file ${viewMode === 'list' ? 'explorer__item--list' : ''}`}
-                                            onClick={() => dispatch({ type: 'SELECT_FILE', payload: file })}
+                                            onClick={() => dispatch({ type: 'OPEN_VIEWER', payload: file })}
                                             onContextMenu={(e) => handleContextMenu(e, file)}
                                         >
                                             <div className="explorer__item-icon" style={{ color: getFileColor(file.type) }}>
@@ -158,15 +158,24 @@ export default function ExplorerPage() {
 
             {contextMenu && (
                 <div className="explorer__context-menu animate-scale-in" style={{ left: contextMenu.x, top: contextMenu.y }}>
+                    <button onClick={() => { dispatch({ type: 'OPEN_VIEWER', payload: contextMenu.file }); closeContext(); }}>
+                        <Eye size={14} /> View
+                    </button>
                     <button onClick={() => { dispatch({ type: 'SELECT_FILE', payload: contextMenu.file }); closeContext(); }}>
                         <Info size={14} /> Details
                     </button>
                     <button onClick={() => { dispatch({ type: 'TOGGLE_STAR', payload: contextMenu.file.id }); closeContext(); }}>
                         <Star size={14} /> {contextMenu.file.starred ? 'Unstar' : 'Star'}
                     </button>
-                    <button><Download size={14} /> Download</button>
+                    <button onClick={() => {
+                        const token = localStorage.getItem('token');
+                        window.open(`/api/files/download/${contextMenu.file.id}?token=${token}`, '_blank');
+                        closeContext();
+                    }}>
+                        <Download size={14} /> Download
+                    </button>
                     <div className="explorer__context-divider" />
-                    <button className="explorer__context-danger" onClick={() => { dispatch({ type: 'DELETE_FILE', payload: contextMenu.file.id }); closeContext(); }}>
+                    <button className="explorer__context-danger" onClick={() => { deleteFile(contextMenu.file.id); closeContext(); }}>
                         <Trash2 size={14} /> Delete
                     </button>
                 </div>

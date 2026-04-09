@@ -5,6 +5,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import MainLayout from './components/Layout/MainLayout';
 import UploadModal from './components/Upload/UploadModal';
 import FileDetailsPanel from './components/FileDetails/FileDetailsPanel';
+import FileViewer from './components/FileViewer/FileViewer';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -37,6 +38,7 @@ function AppRoutes() {
               <MainLayout />
               <UploadModal />
               <FileDetailsPanel />
+              <FileViewer />
             </FileProvider>
           </ProtectedRoute>
         }

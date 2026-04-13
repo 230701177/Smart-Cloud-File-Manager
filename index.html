@@ -2,13 +2,21 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/Smart-Cloud-File-Manager/cloud-logo.svg" />
+    <link rel="icon" type="image/svg+xml" href="/Smart-Cloud-File-Manager/cloud-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Smart Cloud File Manager</title>
-    <script type="module" crossorigin src="/Smart-Cloud-File-Manager/assets/index-CVTv3VCc.js"></script>
-    <link rel="stylesheet" crossorigin href="/Smart-Cloud-File-Manager/assets/index-hatkkDeo.css">
+    <script>
+      // Suppress noisy browser extension errors that aren't related to the application
+      const originalConsoleError = console.error;
+      console.error = (...args) => {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('Unchecked runtime.lastError')) return;
+        originalConsoleError.apply(console, args);
+      };
+    </script>
+    <script type="module" crossorigin src="/Smart-Cloud-File-Manager/assets/index-cGZTyXlO.js"></script>
+    <link rel="stylesheet" crossorigin href="/Smart-Cloud-File-Manager/assets/index-QzPPKnBl.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
   </body>
 </html>

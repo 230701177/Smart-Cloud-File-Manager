@@ -13,6 +13,10 @@ const versionSchema = new mongoose.Schema({
   chunkHashes: {
     type: [String],
     required: true
+  },
+  restoredFromVersionNumber: {
+    type: Number,
+    default: null
   }
 }, { timestamps: true });
 

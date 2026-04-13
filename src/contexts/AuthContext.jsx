@@ -21,8 +21,13 @@ export function AuthProvider({ children }) {
             if (res.ok) {
                 const data = await res.json();
                 setCurrentUser(data.user);
+                localStorage.setItem('smart_cloud_user_session', JSON.stringify({
+                    name: data.user.name,
+                    email: data.user.email
+                }));
             } else {
                 localStorage.removeItem('token');
+                localStorage.removeItem('smart_cloud_user_session');
                 setCurrentUser(null);
             }
         } catch (err) {
@@ -52,6 +57,10 @@ export function AuthProvider({ children }) {
             if (res.ok) {
                 localStorage.setItem('token', data.token);
                 setCurrentUser(data.user);
+                localStorage.setItem('smart_cloud_user_session', JSON.stringify({
+                    name: data.user.name,
+                    email: data.user.email
+                }));
                 setIsLoading(false);
                 return true;
             } else {
@@ -80,6 +89,10 @@ export function AuthProvider({ children }) {
             if (res.ok) {
                 localStorage.setItem('token', data.token);
                 setCurrentUser(data.user);
+                localStorage.setItem('smart_cloud_user_session', JSON.stringify({
+                    name: data.user.name,
+                    email: data.user.email
+                }));
                 setIsLoading(false);
                 return true;
             } else {
@@ -96,6 +109,7 @@ export function AuthProvider({ children }) {
 
     const logout = useCallback(() => {
         localStorage.removeItem('token');
+        localStorage.removeItem('smart_cloud_user_session');
         setCurrentUser(null);
     }, []);
 

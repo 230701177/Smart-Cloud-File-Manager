@@ -2,9 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/cloud-dark.png" />
+    <link rel="icon" type="image/svg+xml" href="/cloud-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Smart Cloud File Manager</title>
+    <script>
+      // Suppress noisy browser extension errors that aren't related to the application
+      const originalConsoleError = console.error;
+      console.error = (...args) => {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('Unchecked runtime.lastError')) return;
+        originalConsoleError.apply(console, args);
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>

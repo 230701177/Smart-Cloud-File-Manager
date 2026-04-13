@@ -21,13 +21,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--sp-6) var(--sp-4);
-    min-height: 140px;
+    padding: var(--sp-4) var(--sp-6);
+    min-height: var(--topbar-height);
     border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .sidebar--collapsed .sidebar__header {
-    min-height: var(--topbar-height);
     padding: var(--sp-4);
 }
 
@@ -116,13 +115,13 @@
 .sidebar__link--active::before {
     content: '';
     position: absolute;
-    left: 4px;
+    left: 0;
     top: 50%;
     transform: translateY(-50%);
     width: 4px;
-    height: 18px;
+    height: 60%;
     background: var(--color-primary);
-    border-radius: var(--radius-full);
+    border-radius: 0 var(--radius-full) var(--radius-full) 0;
 }
 
 .sidebar__badge {

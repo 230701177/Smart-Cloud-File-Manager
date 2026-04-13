@@ -136,16 +136,34 @@
     border-color: var(--color-primary);
 }
 
+.explorer__list-header {
+    display: grid;
+    grid-template-columns: 40px 1fr 140px 100px 120px;
+    padding: var(--sp-2) var(--sp-6);
+    gap: var(--sp-4);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-bold);
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--color-border-subtle);
+    margin-bottom: var(--sp-1);
+    align-items: center;
+}
+
 .explorer__item--list {
     flex-direction: row;
+    display: grid;
+    grid-template-columns: 40px 1fr 140px 100px 120px;
     text-align: left;
     align-items: center;
-    padding: var(--sp-3) var(--sp-5);
+    padding: var(--sp-2) var(--sp-6);
+    gap: var(--sp-4);
 }
 
 .explorer__item--list .explorer__item-info {
-    flex: 1;
-    min-width: 0;
+    flex: none;
+    width: 100%;
 }
 
 .explorer__item-info {
@@ -161,7 +179,8 @@
     display: block;
     width: 100%;
     font-size: var(--fs-sm);
-    font-weight: var(--fw-medium);
+    font-weight: var(--fw-semibold);
+    color: var(--color-text-primary);
 }
 
 .explorer__item-meta {
@@ -246,8 +265,44 @@
         padding: var(--sp-3);
     }
 
+    /* List View Mobile Overhaul */
+    .explorer__list-header {
+        display: none;
+    }
+
     .explorer__item--list {
-        padding: var(--sp-2) var(--sp-3);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: var(--sp-3);
+        gap: var(--sp-3);
+        grid-template-columns: unset; /* Break grid */
+    }
+
+    .explorer__item--list .explorer__item-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .explorer__item--list .explorer__item-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .explorer__item--list .list-column-date,
+    .explorer__item--list .list-column-size,
+    .explorer__item--list .list-column-type {
+        display: none;
+    }
+
+    .explorer__item--list .explorer__item-meta {
+        margin-left: 0;
     }
 
     .explorer__crumb {

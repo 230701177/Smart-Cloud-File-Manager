@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { FileProvider } from './contexts/FileContext';
@@ -14,6 +15,7 @@ import StarredPage from './pages/StarredPage';
 import SharedPage from './pages/SharedPage';
 import TrashPage from './pages/TrashPage';
 import SettingsPage from './pages/SettingsPage';
+import SplashScreen from './components/Common/SplashScreen';
 
 function ProtectedRoute({ children }) {
   const { currentUser } = useAuth();
@@ -56,12 +58,27 @@ function AppRoutes() {
   );
 }
 
+function AppContent() {
+  const { isLoading } = useAuth();
+  const [minTimePassed, setMinTimePassed] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinTimePassed(true);
+    }, 2500); // 2.5 seconds minimum to enjoy the animation
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading || !minTimePassed) return <SplashScreen />;
+  return <AppRoutes />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <AppRoutes />
+          <AppContent />
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

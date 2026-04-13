@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smartcloud-app
+  labels:
+    app: smartcloud
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: smartcloud
+  template:
+    metadata:
+      labels:
+        app: smartcloud
+    spec:
+      containers:
+      - name: smartcloud-container
+        image: acrsmartcloudfmprod.azurecr.io/smartcloud:latest # Placeholder for ACR image
+        ports:
+        - containerPort: 5000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "5000"
+        # Secrets should ideally be in K8s Secrets, but using Env for simplicity in this task
+        - name: AZURE_STORAGE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: storage-connection
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: cloud-secrets
+              key: mongo-uri
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smartcloud-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: smartcloud

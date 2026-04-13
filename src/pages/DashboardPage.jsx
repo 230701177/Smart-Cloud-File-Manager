@@ -4,6 +4,7 @@ import {
     Star, Clock, Download, MoreVertical
 } from 'lucide-react';
 import { useFiles } from '../contexts/FileContext';
+import { useAuth } from '../contexts/AuthContext';
 import { formatBytes, formatDate, getFileColor } from '../utils/helpers';
 import './DashboardPage.css';
 
@@ -14,7 +15,8 @@ const typeIcons = {
 };
 
 export default function DashboardPage() {
-    const { getStats, getRecentFiles, dispatch } = useFiles();
+    const { getStats, getRecentFiles, recommendedFiles, dispatch } = useFiles();
+    const { currentUser } = useAuth();
     const stats = getStats();
     const recentFiles = getRecentFiles();
 
@@ -40,8 +42,11 @@ export default function DashboardPage() {
         <div className="dashboard animate-fade-in">
             <div className="dashboard__header animate-reveal">
                 <div>
-                    <h1 className="dashboard__title">Welcome Back</h1>
-                    <p className="text-secondary text-sm">Initializing your secure cloud vault...</p>
+                    <h1 className="dashboard__title">Welcome,  {currentUser?.name || 'User'}</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                        <div className="subtitle-pulse" />
+                        <p className="text-secondary text-sm" style={{ margin: 0 }}>Managing your optimized cloud workspace</p>
+                    </div>
                 </div>
             </div>
 
@@ -101,33 +106,59 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
+                <div className="dashboard__content">
+                    {/* Recommended section */}
+                    <div className="card dashboard__recommended animate-reveal">
+                        <h3 className="dashboard__section-title">Recommended for You</h3>
+                        <div className="recommended__grid">
+                            {recommendedFiles.length > 0 ? recommendedFiles.slice(0, 4).map((file) => {
+                                const Icon = typeIcons[file.type] || Files;
+                                return (
+                                    <div
+                                        key={file.id}
+                                        className="recommended__card"
+                                        onClick={() => dispatch({ type: 'SELECT_FILE', payload: file })}
+                                    >
+                                        <div className="recommended__icon" style={{ color: getFileColor(file.type) }}>
+                                            <Icon size={24} />
+                                        </div>
+                                        <div className="recommended__info">
+                                            <span className="recommended__name truncate">{file.name}</span>
+                                        </div>
+                                    </div>
+                                );
+                            }) : (
+                                <p className="text-sm text-tertiary p-4">Access more files to get personalized recommendations.</p>
+                            )}
+                        </div>
+                    </div>
 
-                {/* Recent Files */}
-                <div className="card dashboard__recent animate-reveal animate-stagger-3">
-                    <h3 className="dashboard__section-title">Recent Files</h3>
-                    <div className="recent__list">
-                        {recentFiles.map((file) => {
-
-                            const Icon = typeIcons[file.type] || Files;
-                            return (
-                                <div
-                                    key={file.id}
-                                    className="recent__item"
-                                    onClick={() => dispatch({ type: 'SELECT_FILE', payload: file })}
-                                >
-                                    <div className="recent__item-icon" style={{ color: getFileColor(file.type) }}>
-                                        <Icon size={18} />
+                    {/* Recent Files */}
+                    <div className="card dashboard__recent animate-reveal">
+                        <h3 className="dashboard__section-title">Recent Files</h3>
+                        <div className="recent__list">
+                            {recentFiles.map((file) => {
+                                const Icon = typeIcons[file.type] || Files;
+                                return (
+                                    <div
+                                        key={file.id}
+                                        className="recent__item"
+                                        onClick={() => dispatch({ type: 'SELECT_FILE', payload: file })}
+                                    >
+                                        <div className="recent__item-icon" style={{ color: getFileColor(file.type) }}>
+                                            <Icon size={18} />
+                                        </div>
+                                        <div className="recent__item-info">
+                                            <span className="recent__item-name truncate">{file.name}</span>
+                                            <span className="text-xs text-tertiary">{formatBytes(file.size)} · {formatDate(file.modifiedAt)}</span>
+                                        </div>
+                                        <div className="recent__item-actions">
+                                            {file.starred && <Star size={14} fill="var(--color-warning)" color="var(--color-warning)" />}
+                                        </div>
                                     </div>
-                                    <div className="recent__item-info">
-                                        <span className="recent__item-name truncate">{file.name}</span>
-                                        <span className="text-xs text-tertiary">{formatBytes(file.size)} · {formatDate(file.modifiedAt)}</span>
-                                    </div>
-                                    <div className="recent__item-actions">
-                                        {file.starred && <Star size={14} fill="var(--color-warning)" color="var(--color-warning)" />}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>

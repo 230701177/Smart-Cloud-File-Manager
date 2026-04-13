@@ -40,7 +40,7 @@ exports.updateFolder = async (req, res, next) => {
     const folder = await Folder.findOneAndUpdate(
       { folderId, userId: req.user._id },
       { name, color },
-      { new: true }
+      { returnDocument: 'after' }
     );
     
     if (!folder) return res.status(404).json({ error: 'Folder not found' });

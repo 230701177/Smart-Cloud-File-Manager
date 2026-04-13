@@ -11,6 +11,7 @@ export default function PDFViewer({ url }) {
     const [pageNumber, setPageNumber] = useState(1);
     const [scale, setScale] = useState(1.2);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(null);
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const renderTaskRef = useRef(null);
@@ -18,6 +19,7 @@ export default function PDFViewer({ url }) {
     useEffect(() => {
         const loadPdf = async () => {
             setLoading(true);
+            setLoadError(null);
             try {
                 const loadingTask = pdfjsLib.getDocument(url);
                 const pdfData = await loadingTask.promise;
@@ -26,6 +28,7 @@ export default function PDFViewer({ url }) {
                 setLoading(false);
             } catch (error) {
                 console.error('Error loading PDF:', error);
+                setLoadError('Unable to load this PDF preview. Try downloading the file.');
                 setLoading(false);
             }
         };
@@ -96,6 +99,10 @@ export default function PDFViewer({ url }) {
                 <div className="pdf-viewer__loading">
                     <Loader2 className="animate-spin" size={32} />
                     <p>Loading PDF engine...</p>
+                </div>
+            ) : loadError ? (
+                <div className="pdf-viewer__loading">
+                    <p>{loadError}</p>
                 </div>
             ) : (
                 <>

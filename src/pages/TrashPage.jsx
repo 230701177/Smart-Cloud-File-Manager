@@ -5,7 +5,7 @@ import { formatBytes, formatDate } from '../utils/helpers';
 import './TrashPage.css';
 
 export default function TrashPage() {
-    const { trash, dispatch } = useFiles();
+    const { trash, restoreFromTrash, permanentDelete } = useFiles();
     const [confirmEmpty, setConfirmEmpty] = useState(false);
 
     return (
@@ -39,10 +39,10 @@ export default function TrashPage() {
                                 </span>
                             </div>
                             <div className="trash__item-actions">
-                                <button className="btn btn-ghost text-sm" onClick={() => dispatch({ type: 'RESTORE_FILE', payload: file.id })}>
+                                <button className="btn btn-ghost text-sm" onClick={() => restoreFromTrash(file.id)}>
                                     <RotateCcw size={14} /> Restore
                                 </button>
-                                <button className="btn btn-danger text-sm" onClick={() => dispatch({ type: 'PERMANENT_DELETE', payload: file.id })}>
+                                <button className="btn btn-danger text-sm" onClick={() => permanentDelete(file.id)}>
                                     <X size={14} /> Remove
                                 </button>
                             </div>
@@ -62,7 +62,10 @@ export default function TrashPage() {
                             </p>
                             <div className="flex gap-3 justify-center">
                                 <button className="btn btn-secondary" onClick={() => setConfirmEmpty(false)}>Cancel</button>
-                                <button className="btn btn-danger" onClick={() => { dispatch({ type: 'EMPTY_TRASH' }); setConfirmEmpty(false); }}>
+                                <button className="btn btn-danger" onClick={() => { 
+                                    trash.forEach(f => permanentDelete(f.id));
+                                    setConfirmEmpty(false); 
+                                }}>
                                     Delete All
                                 </button>
                             </div>

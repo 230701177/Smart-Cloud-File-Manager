@@ -34,7 +34,24 @@ export default function ExplorerPage() {
 
     const handleContextMenu = (e, file) => {
         e.preventDefault();
-        setContextMenu({ x: e.clientX, y: e.clientY, file });
+        const menuWidth = 200;
+        const menuHeight = 250;
+        const padding = 16;
+        
+        let x = e.clientX;
+        let y = e.clientY;
+
+        // Prevent horizontal overflow
+        if (x + menuWidth + padding > window.innerWidth) {
+            x = window.innerWidth - menuWidth - padding;
+        }
+
+        // Prevent vertical overflow
+        if (y + menuHeight + padding > window.innerHeight) {
+            y = window.innerHeight - menuHeight - padding;
+        }
+
+        setContextMenu({ x, y, file });
     };
 
     const closeContext = () => setContextMenu(null);
@@ -96,6 +113,15 @@ export default function ExplorerPage() {
                     {folders.length > 0 && (
                         <div className="explorer__section">
                             <h4 className="explorer__section-title">Folders</h4>
+                            {viewMode === 'list' && (
+                                <div className="explorer__list-header">
+                                    <div className="list-column-icon"></div>
+                                    <div className="list-column-name">Name</div>
+                                    <div className="list-column-date">Date Created</div>
+                                    <div className="list-column-size">Size</div>
+                                    <div className="list-column-actions"></div>
+                                </div>
+                            )}
                             <div className={viewMode === 'grid' ? 'explorer__grid' : 'explorer__list'}>
                                 {folders.map((folder) => (
                                     <div
@@ -108,10 +134,18 @@ export default function ExplorerPage() {
                                         </div>
                                         <div className="explorer__item-info">
                                             <span className="explorer__item-name truncate">{folder.name}</span>
-                                            {viewMode === 'list' && (
-                                                <span className="text-xs text-tertiary">{formatDate(folder.createdAt)}</span>
-                                            )}
                                         </div>
+                                        {viewMode === 'list' && (
+                                            <>
+                                                <span className="text-xs text-tertiary list-column-date">{formatDate(folder.createdAt)}</span>
+                                                <span className="text-xs text-tertiary list-column-size">—</span>
+                                                <div className="explorer__item-meta">
+                                                    <button className="btn-icon" onClick={(e) => { e.stopPropagation(); handleContextMenu(e, folder); }}>
+                                                        <MoreVertical size={16} />
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -121,6 +155,15 @@ export default function ExplorerPage() {
                     {files.length > 0 && (
                         <div className="explorer__section">
                             <h4 className="explorer__section-title">Files</h4>
+                            {viewMode === 'list' && folders.length === 0 && (
+                                <div className="explorer__list-header">
+                                    <div className="list-column-icon"></div>
+                                    <div className="list-column-name">Name</div>
+                                    <div className="list-column-date">Date Modified</div>
+                                    <div className="list-column-size">Size</div>
+                                    <div className="list-column-actions"></div>
+                                </div>
+                            )}
                             <div className={viewMode === 'grid' ? 'explorer__grid' : 'explorer__list'}>
                                 {files.map((file) => {
                                     const Icon = typeIcons[file.type] || FileIcon;
@@ -136,10 +179,18 @@ export default function ExplorerPage() {
                                             </div>
                                             <div className="explorer__item-info">
                                                 <span className="explorer__item-name truncate">{file.name}</span>
-                                                <span className="text-xs text-tertiary">
-                                                    {formatBytes(file.size)} {viewMode === 'list' && `· ${formatDate(file.modifiedAt)}`}
-                                                </span>
+                                                {viewMode === 'grid' && (
+                                                    <span className="text-xs text-tertiary">
+                                                        {formatBytes(file.size)}
+                                                    </span>
+                                                )}
                                             </div>
+                                            {viewMode === 'list' && (
+                                                <>
+                                                    <span className="text-xs text-tertiary list-column-date">{formatDate(file.modifiedAt)}</span>
+                                                    <span className="text-xs text-tertiary list-column-size">{formatBytes(file.size)}</span>
+                                                </>
+                                            )}
                                             <div className="explorer__item-meta">
                                                 {file.starred && <Star size={14} fill="var(--color-warning)" color="var(--color-warning)" />}
                                                 {file.shared && <span className="badge badge-primary">Shared</span>}

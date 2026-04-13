@@ -59,6 +59,7 @@
     outline: none;
     width: 100%;
     font-size: var(--fs-sm);
+    padding: var(--sp-2) 0;
 }
 
 .topbar__search-input::placeholder {
@@ -169,13 +170,18 @@
     display: flex;
     align-items: center;
     gap: var(--sp-2);
-    padding: var(--sp-1) var(--sp-2);
+    padding: var(--sp-1) var(--sp-4) var(--sp-1) var(--sp-1);
     border-radius: var(--radius-full);
-    transition: background var(--transition-fast);
+    transition: all var(--transition-fast);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--clay-shadow-sm);
 }
 
 .topbar__user-btn:hover {
     background: var(--color-surface-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--clay-shadow-md);
 }
 
 .topbar__avatar {
@@ -207,22 +213,74 @@
 @media (max-width: 768px) {
     .topbar {
         padding: 0 var(--sp-4);
+        gap: var(--sp-2);
     }
 
     .topbar__mobile-menu {
         display: flex;
+        flex-shrink: 0;
+    }
+
+    .topbar__left {
+        max-width: none;
+        gap: var(--sp-2);
     }
 
     .topbar__search {
-        padding: var(--sp-1) var(--sp-3);
-        max-width: 140px;
+        padding: var(--sp-2) var(--sp-3);
+        border-width: 1px;
+    }
+
+    .topbar__search-icon {
+        width: 14px;
+        height: 14px;
     }
 
     .topbar__search-input {
         font-size: var(--fs-xs);
+        padding: 4px 0;
     }
 
     .topbar__right {
         gap: var(--sp-1);
     }
+
+    .topbar__user-btn {
+        padding: var(--sp-1);
+    }
+    
+    .topbar__dropdown {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        min-width: 0;
+        width: 100%;
+        max-height: 80vh;
+        animation: slideInUp var(--transition-base);
+    }
+
+    .topbar__notif-dropdown {
+        min-width: 0;
+    }
+
+    .topbar__mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(4px);
+        z-index: 150;
+        display: none;
+    }
+
+    .topbar__mobile-overlay.show {
+        display: block;
+    }
+}
+
+@keyframes slideInUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
 }

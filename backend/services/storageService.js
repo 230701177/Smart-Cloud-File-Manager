@@ -1,56 +1,81 @@
-const fs = require('fs');
-const path = require('path');
-const { promisify } = require('util');
+const azure = require('../utils/azureStorage');
+const local = require('../utils/localStorage');
 
-const writeFileAsync = promisify(fs.writeFile);
-const readFileAsync = promisify(fs.readFile);
-const unlinkAsync = promisify(fs.unlink);
+const normalizeProvider = (provider) => (provider || 'local').toLowerCase();
 
-const STORAGE_DIR = path.join(__dirname, '..', 'storage');
+const hasAzureConfig = () => Boolean(process.env.AZURE_STORAGE_CONNECTION_STRING);
 
-// Ensure storage directory exists
-if (!fs.existsSync(STORAGE_DIR)) {
-  fs.mkdirSync(STORAGE_DIR, { recursive: true });
-}
-
-/**
- * Saves a chunk buffer to local disk
- * @param {string} hash Chunk hash used as filename
- * @param {Buffer} buffer The chunk data
- * @returns {string} The path where the chunk is stored
- */
-const storeChunk = async (hash, buffer) => {
-  const chunkPath = path.join(STORAGE_DIR, hash);
-  if (!fs.existsSync(chunkPath)) {
-    await writeFileAsync(chunkPath, buffer);
+const resolveDefaultProvider = () => {
+  if (process.env.STORAGE_PROVIDER) {
+    return normalizeProvider(process.env.STORAGE_PROVIDER);
   }
-  return chunkPath;
+
+  return hasAzureConfig() ? 'azure' : 'local';
 };
 
-/**
- * Retrieves a chunk from disk
- * @param {string} hash The chunk hash
- * @returns {Buffer} The chunk data
- */
+const createS3Adapter = () => ({
+  storeChunk: async () => {
+    throw new Error('S3 storage provider is not configured in this workspace');
+  },
+  getChunk: async () => {
+    throw new Error('S3 storage provider is not configured in this workspace');
+  },
+  deleteChunk: async () => {
+    throw new Error('S3 storage provider is not configured in this workspace');
+  }
+});
+
+const adapters = {
+  local: {
+    storeChunk: local.uploadChunkLocal,
+    getChunk: local.downloadChunkLocal,
+    deleteChunk: local.deleteChunkLocal
+  },
+  azure: {
+    storeChunk: azure.uploadChunkToAzure,
+    getChunk: azure.downloadChunkFromAzure,
+    deleteChunk: azure.deleteChunkFromAzure
+  },
+  s3: createS3Adapter()
+};
+
+let activeProvider = normalizeProvider(process.env.STORAGE_PROVIDER);
+activeProvider = resolveDefaultProvider();
+
+const setProvider = (provider) => {
+  activeProvider = normalizeProvider(provider);
+};
+
+const getProviderAdapter = () => adapters[activeProvider] || adapters.local;
+
+const storeChunk = async (hash, buffer) => getProviderAdapter().storeChunk(hash, buffer);
+
 const getChunk = async (hash) => {
-  const chunkPath = path.join(STORAGE_DIR, hash);
-  return await readFileAsync(chunkPath);
-};
+  const primaryProvider = activeProvider;
+  const fallbackProvider = primaryProvider === 'azure' ? 'local' : 'azure';
 
-/**
- * Deletes a chunk from disk
- * @param {string} hash The chunk hash
- */
-const deleteChunk = async (hash) => {
-  const chunkPath = path.join(STORAGE_DIR, hash);
-  if (fs.existsSync(chunkPath)) {
-    await unlinkAsync(chunkPath);
+  try {
+    return await (adapters[primaryProvider] || adapters.local).getChunk(hash);
+  } catch (error) {
+    const isNotFound = error && (error.code === 'ENOENT' || error.statusCode === 404 || error.statusCode === 409);
+    if (!isNotFound) {
+      throw error;
+    }
+
+    // If chunk is not found in selected provider, try the alternate backend.
+    if (fallbackProvider === 'azure' && !hasAzureConfig()) {
+      throw error;
+    }
+
+    return await (adapters[fallbackProvider] || adapters.local).getChunk(hash);
   }
 };
+
+const deleteChunk = async (hash) => getProviderAdapter().deleteChunk(hash);
 
 module.exports = {
   storeChunk,
   getChunk,
   deleteChunk,
-  STORAGE_DIR
+  setProvider
 };

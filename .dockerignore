@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.git
+.github
+.env
+dist
+terraform
+k8s
+README.md
+DEVOPS.md

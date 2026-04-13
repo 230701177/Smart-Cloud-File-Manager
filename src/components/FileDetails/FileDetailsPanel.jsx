@@ -6,8 +6,11 @@ import { formatBytes, formatDate, getFileColor } from '../../utils/helpers';
 import './FileDetails.css';
 
 export default function FileDetailsPanel() {
-    const { selectedFile, showDetailsPanel, dispatch, deleteFile } = useFiles();
+    const { selectedFile, showDetailsPanel, dispatch, deleteFile, restoreVersion } = useFiles();
+
     if (!showDetailsPanel || !selectedFile) return null;
+
+    const currentVersionNum = selectedFile.version || (selectedFile.versions?.length > 0 ? selectedFile.versions[selectedFile.versions.length - 1].versionNumber : 1);
 
     const meta = [
         { label: 'Type', value: selectedFile.type, icon: FileText },
@@ -67,21 +70,23 @@ export default function FileDetailsPanel() {
                     )}
                 </div>
 
+
+
                 <div className="details__versions">
-                    <h4 className="details__section-title">Version History ({selectedFile.versions.length})</h4>
+                    <h4 className="details__section-title">Version History ({selectedFile.versions?.length || 0})</h4>
                     <div className="details__version-list">
-                        {[...selectedFile.versions].reverse().map((v, i) => (
+                        {selectedFile.versions && [...selectedFile.versions].reverse().map((v, i) => (
                             <div key={v.versionId} className="details__version-item">
                                 <div className="details__version-dot-line">
-                                    <div className={`details__version-dot ${i === 0 ? 'details__version-dot--current' : ''}`} />
+                                    <div className={`details__version-dot ${v.versionNumber === currentVersionNum ? 'details__version-dot--current' : ''}`} />
                                     {i < selectedFile.versions.length - 1 && <div className="details__version-line" />}
                                 </div>
                                 <div className="details__version-info">
-                                    <span className="text-sm" style={{ fontWeight: 500 }}>{v.note}</span>
+                                    <span className="text-sm" style={{ fontWeight: 500 }}>{v.note} {v.versionNumber === currentVersionNum ? '(Current)' : ''}</span>
                                     <span className="text-xs text-tertiary">{formatDate(v.date)} · {formatBytes(v.size)}</span>
                                 </div>
-                                {i !== 0 && (
-                                    <button className="btn btn-ghost text-xs" onClick={() => dispatch({ type: 'RESTORE_VERSION', payload: { fileId: selectedFile.id, versionId: v.versionId } })}>
+                                {v.versionNumber !== currentVersionNum && (
+                                    <button className="btn btn-ghost text-xs" onClick={() => restoreVersion(selectedFile.id, v.versionNumber)}>
                                         <RotateCcw size={12} /> Restore
                                     </button>
                                 )}

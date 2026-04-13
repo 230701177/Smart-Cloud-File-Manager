@@ -14,15 +14,24 @@ This repository contains both the **Frontend** (React + Vite) and the **Backend*
 
 ## 🌟 Key Features
 
-- **Cinematic Document Viewer**: Fully integrated in-browser preview functionality.
-  - Native High-DPI PDF preview engine (via `pdf.js`) with responsive controls.
-  - Rich DOCX document viewer retaining structure.
-  - Interactive CSV data tables and Code syntax highlighting.
-- **Deduplication Engine**: Backend chunk-level file deduplication mechanism. Prevents identical files and chunks from wasting server storage space.
-- **Version Control**: Manage multiple file iterations and historical state restoration seamlessly.
-- **File Upload & Management**: Interactive drag-and-drop animated upload modal with batching capabilities.
-- **Modern Adaptive Theme**: "Claymorphism" Neo-Brutalism aesthetics that dynamically adapt to Light and Dark modes.
-- **Storage Monitoring**: Real-time tracking of used storage, available spaces, and chunks saved from duplication.
+1. **Advanced AI Awareness**: Integrated **OpenRouter (Gemini 2.0 Flash)** for instantaneous document intelligence.
+   - Context-aware summaries with structured JSON output.
+   - Sectional insights: Overview, Key Points, Important Details, and Takeaways.
+   - Dynamic UI rendering based on AI confidence levels.
+2. **Cinematic Document Viewer**: Fully integrated in-browser preview functionality.
+   - Native High-DPI PDF preview engine (via `pdf.js`) with responsive controls.
+   - Rich DOCX document viewer retaining structure.
+   - Interactive CSV data tables and Code syntax highlighting.
+3. **Fully Responsive Mobile Interface**: Optimized for all viewports from Desktop to Mobile.
+   - Native-like bottom-sheet menus for profile and notifications.
+   - Adaptive file explorer columns (Dynamic column hiding based on viewport width).
+   - Touch-optimized interaction zones and high-performing mobile layouts.
+4. **Deduplication Engine**: Backend chunk-level file deduplication mechanism.
+   - Prevents identical files/chunks from wasting server storage capacity.
+   - Visualizes "Space Saved" metric on the premium dashboard.
+5. **Version Control**: Manage multiple file iterations and historical state restoration seamlessly.
+6. **Modern Adaptive Theme**: "Claymorphism" Neo-Brutalism aesthetics that dynamically adapt to Light and Dark modes.
+7. **Safe Console Filtering**: Suppressed third-party extension error noise for a focused developer experience.
 
 ---
 
@@ -36,9 +45,9 @@ This repository contains both the **Frontend** (React + Vite) and the **Backend*
 
 ## 🧱 Architecture Overview
 
-- **Frontend**: `React.js` (v19) via `Vite`. Managed via robust `Context API` states and interactive components like `lucide-react` for iconography.
-- **Backend**: `Node.js` and `Express`. Handles chunk-hashing (SHA-256), token security, versioning, and streams downloads natively without forcing arbitrary `.octet-stream` blobs.
-- **Database Model**: MongoDB using Reference-counting models for deduplicated multi-user files.
+- **Frontend**: `React.js` (v19) via `Vite`. Managed via high-performance `Context API` and `lucide-react` iconography.
+- **Backend**: `Node.js` and `Express`. Powered by OpenRouter for AI, and native chunk-hashing (SHA-256) for deduplication.
+- **Database Model**: MongoDB with Reference-counting architectures.
 
 ---
 
@@ -47,6 +56,7 @@ This repository contains both the **Frontend** (React + Vite) and the **Backend*
 ### Prerequisites
 - Node.js (v18+)
 - MongoDB connection string
+- OpenRouter API Key (Set as `GEMINI_API_KEY` in `.env`)
 
 ### Setup
 
@@ -66,8 +76,7 @@ This repository contains both the **Frontend** (React + Vite) and the **Backend*
    ```bash
    cd backend
    npm install
-   cp .env.example .env # And configure your options
-   npm install pdfjs-dist mammoth papaparse react-syntax-highlighter
+   cp .env.example .env # Configure your OpenRouter key & Mongo URI
    npm run dev
    ```
 
@@ -79,16 +88,7 @@ The goal of Smart Cloud File Manager is to provide an efficient, scalable, and s
 
 ---
 
-## Contribution
-
-Contributions are welcome. Please open an issue or submit a pull request following standard development practices.
-
----
-
 ## License
 
-This project is currently under development. License details will be added soon.
+© 2026 Smart Cloud File Manager. All Rights Reserved. Designed for the Future of File Management.
 
----
-
-**© 2026 Smart Cloud File Manager. All Rights Reserved.**

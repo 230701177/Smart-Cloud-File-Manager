@@ -65,18 +65,26 @@ export default function TopBar({ onMobileMenuToggle }) {
                         {unreadCount > 0 && <span className="topbar__notif-dot" />}
                     </button>
                     {showNotifs && (
-                        <div className="topbar__dropdown topbar__notif-dropdown animate-fade-in-up">
-                            <div className="topbar__dropdown-header">
-                                <span className="text-sm" style={{ fontWeight: 600 }}>Notifications</span>
-                                <span className="badge badge-primary">{unreadCount} new</span>
-                            </div>
-                            {notifications.map((n) => (
-                                <div key={n.id} className={`topbar__notif-item ${!n.read ? 'topbar__notif-item--unread' : ''}`}>
-                                    <p className="text-sm">{n.message}</p>
-                                    <span className="text-xs text-tertiary">{formatDate(n.time)}</span>
+                        <>
+                            <div className="topbar__mobile-overlay show" onClick={() => setShowNotifs(false)} />
+                            <div className="topbar__dropdown topbar__notif-dropdown animate-fade-in-up">
+                                <div className="topbar__dropdown-header">
+                                    <span className="text-sm" style={{ fontWeight: 600 }}>Notifications</span>
+                                    <span className="badge badge-primary">{unreadCount} new</span>
                                 </div>
-                            ))}
-                        </div>
+                                {notifications.length > 0 ? notifications.map((n) => (
+                                    <div key={n.id} className={`topbar__notif-item ${!n.read ? 'topbar__notif-item--unread' : ''}`}>
+                                        <p className="text-sm">{n.message}</p>
+                                        <span className="text-xs text-tertiary">{formatDate(n.time)}</span>
+                                    </div>
+                                )) : (
+                                    <div className="p-8 text-center text-tertiary">
+                                        <Bell size={32} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
+                                        <p className="text-sm">No new notifications</p>
+                                    </div>
+                                )}
+                            </div>
+                        </>
                     )}
                 </div>
 
@@ -88,22 +96,25 @@ export default function TopBar({ onMobileMenuToggle }) {
                         <span className="topbar__user-name hide-mobile">{currentUser?.name || 'User'}</span>
                     </button>
                     {showUserMenu && (
-                        <div className="topbar__dropdown animate-fade-in-up">
-                            <div className="topbar__dropdown-header">
-                                <div className="topbar__avatar topbar__avatar--lg">
-                                    {currentUser?.name?.charAt(0) || 'U'}
+                        <>
+                            <div className="topbar__mobile-overlay show" onClick={() => setShowUserMenu(false)} />
+                            <div className="topbar__dropdown animate-fade-in-up">
+                                <div className="topbar__dropdown-header">
+                                    <div className="topbar__avatar topbar__avatar--lg">
+                                        {currentUser?.name?.charAt(0) || 'U'}
+                                    </div>
+                                    <div>
+                                        <p style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>{currentUser?.name}</p>
+                                        <p className="text-xs text-secondary">{currentUser?.email}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>{currentUser?.name}</p>
-                                    <p className="text-xs text-secondary">{currentUser?.email}</p>
-                                </div>
-                            </div>
-                            <div className="topbar__dropdown-divider" />
+                                <div className="topbar__dropdown-divider" />
 
-                            <button className="topbar__dropdown-item topbar__dropdown-item--danger" onClick={logout}>
-                                <LogOut size={16} /> Logout
-                            </button>
-                        </div>
+                                <button className="topbar__dropdown-item topbar__dropdown-item--danger" onClick={logout}>
+                                    <LogOut size={16} /> Logout
+                                </button>
+                            </div>
+                        </>
                     )}
                 </div>
             </div>

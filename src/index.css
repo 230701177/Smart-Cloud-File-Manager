@@ -581,11 +581,12 @@ img {
   animation: revealCard 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.animate-stagger-1 { animation-delay: 0.1s; }
-.animate-stagger-2 { animation-delay: 0.2s; }
-.animate-stagger-3 { animation-delay: 0.3s; }
-.animate-stagger-4 { animation-delay: 0.4s; }
 .animate-stagger-5 { animation-delay: 0.5s; }
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
 
 
 .spinner {
@@ -712,23 +713,36 @@ img {
 /* ============================================
    Responsive
    ============================================ */
+@media (max-width: 1200px) {
+  .grid-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 1024px) {
   .grid-4 {
     grid-template-columns: repeat(2, 1fr);
+  }
+  
+  :root {
+    --sidebar-width: 240px;
   }
 }
 
 @media (max-width: 768px) {
   :root {
+    --fs-xl: 1.25rem;
     --fs-2xl: 1.5rem;
-    --fs-3xl: 2rem;
+    --fs-3xl: 1.75rem;
     --sp-6: 16px;
-    /* Reduce large gaps */
+    --sp-10: 24px;
+    --sidebar-width: 280px; /* Mobile sidebar is wider */
   }
 
   .grid-4,
   .grid-2 {
     grid-template-columns: 1fr;
+    gap: var(--sp-4);
   }
 
   .hide-mobile {
@@ -737,20 +751,41 @@ img {
 
   .main-layout__page {
     padding: var(--sp-4);
+    height: calc(100vh - var(--topbar-height));
+    overflow-y: auto;
   }
 
   .modal-content {
-    width: 100%;
-    height: 100%;
-    max-width: none;
-    max-height: none;
-    border-radius: 0;
-    display: flex;
-    flex-direction: column;
+    width: 95%;
+    max-height: 90vh;
+    border-radius: var(--radius-lg);
+    margin: var(--sp-4);
   }
 
-  .modal-body {
-    flex: 1;
-    overflow-y: auto;
+  /* Improved Touch Targets */
+  .btn, .btn-icon {
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-2);
+  }
+
+  /* Utility for stacking on mobile */
+  .flex-mobile-col {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --sp-4: 12px;
+  }
+  
+  .card {
+    padding: var(--sp-4);
   }
 }

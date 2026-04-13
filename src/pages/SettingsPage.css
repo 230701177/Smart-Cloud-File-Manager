@@ -298,11 +298,17 @@
 @media (max-width: 768px) {
     .settings__grid {
         grid-template-columns: 1fr;
+        gap: var(--sp-4);
     }
 
     .settings__storage-visual {
         flex-direction: column;
         gap: var(--sp-4);
+        text-align: center;
+    }
+
+    .settings__quota-details {
+        width: 100%;
     }
 
     .settings__profile-avatar {
@@ -313,6 +319,12 @@
 
     .settings__optimization-grid {
         grid-template-columns: 1fr;
+    }
+
+    .settings__action-row {
+        margin: 0;
+        width: 100%;
+        padding: var(--sp-4) 0;
     }
 
     .settings__opt-value {

@@ -27,9 +27,8 @@ resource "azurerm_storage_account" "storage" {
 }
 
 resource "azurerm_storage_container" "chunks" {
-  name                  = "chunks"
-  storage_account_name  = azurerm_storage_account.storage.name
-  container_access_type = "private"
+  name               = "chunks"
+  storage_account_id = azurerm_storage_account.storage.id
 }
 
 # Cosmos DB with MongoDB API
@@ -70,13 +69,6 @@ resource "azurerm_service_plan" "app_plan" {
 }
 
 # Linux Web App
-resource "azurerm_linux_web_app" "web_app" {
-  name                = "app-${var.project_name}-${var.environment}"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_linux_web_app.main.location # Wait, fixing reference
-}
-
-# Correcting the web app reference
 resource "azurerm_linux_web_app" "main" {
   name                = "app-${var.project_name}-${var.environment}"
   resource_group_name = azurerm_resource_group.main.name

@@ -20,5 +20,6 @@ variable "gemini_api_key" {
   description = "Google Gemini API Key for AI features"
   type        = string
   sensitive   = true
+  default     = ""
 }
 
